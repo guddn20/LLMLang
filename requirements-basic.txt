@@ -1,0 +1,29 @@
+# 1.베이직 리소스 로컬 실습용 — Colab(2026-09) 환경과 동일 버전으로 고정
+# 설치: uv pip install -r requirements-basic.txt   (또는 pip install -r ...)
+
+# ── LangChain 1.x ────────────────────────────────────────────────────────────
+langchain==1.3.17
+langchain-core==1.6.2
+langchain-classic==1.0.8          # LLMChain/RetrievalQA/Memory 등 레거시 (L2, L4, L5)
+langchain-community==0.4.2        # CSVLoader, DocArrayInMemorySearch, load_tools
+langchain-openai==1.6.0
+langchain-text-splitters==1.1.2
+langchain-experimental             # L6 Python 에이전트 (PythonREPLTool)
+langgraph==1.2.11                 # L2 메모리(checkpointer), L6 create_agent
+
+# ── OpenAI ───────────────────────────────────────────────────────────────────
+openai==2.54.0
+tiktoken                          # L2 ConversationTokenBufferMemory
+
+# ── 데이터 / 벡터스토어 ──────────────────────────────────────────────────────
+pandas
+docarray                          # L4, L5 DocArrayInMemorySearch
+
+# ── L6 에이전트 도구 ─────────────────────────────────────────────────────────
+wikipedia                         # load_tools(["wikipedia"])
+numexpr                           # load_tools(["llm-math"])
+
+# ── 유틸 / 노트북 ────────────────────────────────────────────────────────────
+python-dotenv
+jupyter
+ipykernel
