@@ -85,3 +85,12 @@ if you don't think any modifications are needed.
 {{input}}
 
 << OUTPUT (remember to include the ```json)>>"""
+
+REPLY_TEMPLATE = """\
+다음은 가게에 대한 손님의 리뷰입니다. 이 리뷰는 {sentiment} 리뷰입니다.
+사장님을 대신해서, 정중하고 친근한 어투로 리뷰에 대한 답글을 2~3문장으로 작성해주세요.
+부정 리뷰라면 죄송한 마음을 담아 개선 의지를 보여주고,
+긍정 리뷰라면 감사한 마음을 진심으로 표현해주세요.
+
+리뷰: {comment}
+"""
