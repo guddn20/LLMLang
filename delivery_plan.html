@@ -14,10 +14,13 @@ graph TD;
 	check_weather(check_weather)
 	start_delivery(start_delivery)
 	hold_delivery(hold_delivery)
+	delay_delivery(delay_delivery)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> check_weather;
+	check_weather -. &nbsp;delay&nbsp; .-> delay_delivery;
 	check_weather -. &nbsp;hold&nbsp; .-> hold_delivery;
 	check_weather -. &nbsp;delivery&nbsp; .-> start_delivery;
+	delay_delivery --> __end__;
 	hold_delivery --> __end__;
 	start_delivery --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2

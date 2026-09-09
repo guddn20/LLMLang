@@ -38,6 +38,8 @@ def check_weather(state : ShippingState):
 def route_by_weather(state: ShippingState):
     if state['weather'] == '비' :
         return 'hold'
+    elif state['weather'] == '눈' :
+        return 'delay'
     return 'delivery'
 
 
@@ -53,6 +55,13 @@ def hold_delivery(state : ShippingState):
     return {'decision':'배송 중단',
             'reason' : f'{state['city']} 지역 날씨가 {state['weather']} 이므로 배송 중단'}
 
+def delay_delivery(state : ShippingState):
+    print(f"배송이 3일 뒤 재개됩니다.")
+
+    return {
+        "decision": "배송 지연",
+        "reason": f"{state['city']} 지역 날씨가 {state['weather']} 이므로 배송 지연",
+    }
 
 # 3. 노드 연결(그래프 빌드)
 def build_graph():
@@ -61,14 +70,17 @@ def build_graph():
     workflow.add_node('check_weather', check_weather)
     workflow.add_node('start_delivery', start_delivery)
     workflow.add_node('hold_delivery', hold_delivery)
+    workflow.add_node('delay_delivery', delay_delivery)
 
     # 그래프 사이의 지점을 연결
     workflow.add_edge(START, 'check_weather')
     workflow.add_conditional_edges('check_weather', route_by_weather,
                                    {'hold':'hold_delivery',
-                                    'delivery':'start_delivery'})
+                                    'delivery':'start_delivery',
+                                    'delay':'delay_delivery'})
     workflow.add_edge('hold_delivery', END)
     workflow.add_edge('start_delivery', END)
+    workflow.add_edge('delay_delivery', END)
     # workflow.compile()
     return workflow.compile()
 
