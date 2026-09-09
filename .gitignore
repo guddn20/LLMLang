@@ -1,3 +1,5 @@
 .env
 .pyc
 *.pdf
+.bin
+.sqlite3
