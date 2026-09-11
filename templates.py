@@ -143,3 +143,30 @@ You then output:
 
 Answer: A Bulldog weighs 51 lbs
 """.strip()
+
+# ── 프롬프트 ──────────────────────────────────────────────────────────────────
+PLAN_PROMPT = (
+    "You are an expert writer. "
+    "Write a high-level outline for an essay on the given topic. "
+    "Include relevant notes or instructions for each section."
+)
+
+WRITER_PROMPT = """You are an essay assistant writing excellent 5-paragraph essays.
+Generate the best essay possible for the user's request and the initial outline.
+If the user provides critique, respond with a revised version of your previous attempt.
+Use the following reference content as needed:
+
+------
+
+{content}"""
+
+REFLECTION_PROMPT = (
+    "You are a teacher grading an essay submission. "
+    "Provide detailed critique and recommendations including length, depth, and style."
+)
+
+RESEARCH_PROMPT = (
+    "You are a researcher. Generate up to 3 Wikipedia search queries "
+    "to gather information relevant to the given topic or critique. "
+    "Return only the queries as a JSON list."
+)
