@@ -33,8 +33,12 @@ class Queries(BaseModel):
 
 model = ChatOpenAI(model='gpt-4o', temperature=0.7)
 
-wiki = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(top_k_results=1,
-                                                         doc_content_chars_max=500))
+import wikipedia
+wikipedia.set_user_agent('guddn20@gmail.com')
+wiki = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper(top_k_results=2,
+                                                         doc_content_chars_max=2000))
+
+
 
 def plan_node(state:AgentState):
     print(f'[plan node] .... 계획 수립 중 ....')
@@ -49,15 +53,30 @@ def plan_node(state:AgentState):
 
 # 주제에 관련된 내용을 문헌 검색
 def research_node(state: AgentState):
+    print(f'[research_node] .... 리서치 중....')
     return _run_research(state, state['task'])
 
-
 def generate_node(state: AgentState):
-    pass
+    print(f'[generate_node] .... 생성 중....')
+    #생성 시도 제한
+    rev = state.get('revision_number', 1)
+    
+    content_str = '\n'.join(state.get('content') or [])
+    response = model.invoke([
+        SystemMessage(content=WRITER_PROMPT.format(content=content_str)),
+        HumanMessage(content=f"{state['content']} Here is my Plan : {state['plan']}")
+    ])
+    
+    return {'draft' : response.content, 'revision_number': rev+1 }
 
-
+# 비평가 내가 쓴 에세이
 def reflection_node(state: AgentState):
-    pass
+    print(f'[reflection node] .... 비평 중 ....')
+    response = model.invoke([
+        SystemMessage(content=REFLECTION_PROMPT),
+        HumanMessage(content=state['draft'])
+    ])
+    return {'critique': response.content}
 
 # 검색 결과에 대해 평가
 def critique_node(state: AgentState):
@@ -65,7 +84,7 @@ def critique_node(state: AgentState):
 
 def _run_research(state:AgentState, user_content):
     #queries는 Queries라는 클래스의 output을 만드는 모델의 실행 결과
-    queries_ = model.structured_output(Queries).invoke([
+    queries_ = model.with_structured_output(Queries).invoke([
         SystemMessage(content=RESEARCH_PROMPT),
         HumanMessage(content=user_content)
     ])
@@ -83,10 +102,15 @@ def _run_research(state:AgentState, user_content):
         
         content.append(result)
     
-    return { content : content }
+    return { 'content' : content }
 
+# 내가 state에 가지고 있는 revision_number가 max_revision을 넘으면 끝
+# 그렇지 않으면 다시 reflect로 이동
 def should_continue(state: AgentState):
-    pass
+    if state['revision_number'] > state['max_revisions']:
+        return END
+    else:
+        return 'reflect'
 
 
 def build_graph():
@@ -109,12 +133,26 @@ def build_graph():
          'reflect':'reflect'}
     )
     graph.add_edge('reflect', 'critique')
-    graph.add_edge('critique', 'generate')
+    graph.add_edge('critique', 'generator')
     
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)
 
 if __name__ == '__main__':
-    input('무엇이든 물어보세요 : \n')
-    result = build_graph()
-    print(result)
+    graph = build_graph()
+    # print(graph.get_graph().print_ascii())
+
+    task = input('어떤 주제에 대해 글을 쓸까요? : \n')
+    thread_id = {'configurable' : {'thread_id' : 'essay-1'}}
+    
+    for s in graph.stream(
+        {'task' : task,
+        'max_revisions' : 5,
+        'revision_number' : 1,
+        'content' : []},
+        thread_id):
+        node_list = list(s.keys())[0]
+        print(f'{node_list} 완료')
+        
+    final = graph.get_state(thread_id)
+    print(final.values['draft'])
